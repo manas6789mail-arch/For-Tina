@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#190f1d">
+  <meta name="description" content="A little love letter, made just for you.">
+  <title>A Little Question ✨</title>
+  <style>
+    :root {
+      --night: #190f1d;
+      --night-soft: #271522;
+      --rose: #ff7d9e;
+      --rose-light: #ffd0dc;
+      --cream: #fff4ee;
+      --muted: #d9bdc8;
+      --glass: rgba(255, 244, 238, 0.075);
+      --line: rgba(255, 220, 230, 0.17);
+      --shadow: 0 24px 90px rgba(0, 0, 0, .28);
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100svh;
+      overflow-x: hidden;
+      color: var(--cream);
+      background:
+        radial-gradient(ellipse at 15% 18%, rgba(135, 54, 92, .27), transparent 36%),
+        radial-gradient(ellipse at 85% 78%, rgba(105, 47, 89, .24), transparent 38%),
+        linear-gradient(145deg, var(--night), #211321 52%, #130e1a);
+      font-family: Georgia, "Times New Roman", serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font: inherit; }
+    button:focus-visible {
+      outline: 3px solid #fff0a8;
+      outline-offset: 5px;
+    }
+
+    .ambient, .stars, .petals, .confetti-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .ambient { z-index: 0; }
+    .orb {
+      position: absolute;
+      width: 34vmax;
+      height: 34vmax;
+      border-radius: 50%;
+      filter: blur(70px);
+      opacity: .12;
+      background: #ff6d9b;
+      animation: drift 18s ease-in-out infinite alternate;
+    }
+    .orb.one { left: -13vmax; top: -12vmax; }
+    .orb.two {
+      right: -15vmax; bottom: -16vmax;
+      width: 40vmax; height: 40vmax;
+      background: #a66bff; animation-delay: -8s;
+    }
+    .stars { z-index: 0; }
+    .star {
+      position: absolute;
+      width: 2px; height: 2px;
+      border-radius: 50%;
+      background: #fff0e6;
+      opacity: .35;
+      animation: twinkle 3s ease-in-out infinite alternate;
+    }
+    .petals { z-index: 1; }
+    .petal {
+      position: absolute;
+      top: -40px;
+      color: var(--rose-light);
+      opacity: .52;
+      font-size: 17px;
+      animation: petalFall linear infinite;
+      text-shadow: 0 0 18px rgba(255, 125, 158, .3);
+      user-select: none;
+    }
+
+    .page {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      min-height: 100svh;
+      padding: 30px 18px;
+    }
+    .scene {
+      width: min(100%, 590px);
+      text-align: center;
+      animation: sceneIn 1s cubic-bezier(.2,.75,.2,1) both;
+    }
+    .eyebrow {
+      margin: 0 0 22px;
+      color: var(--rose-light);
+      font: 600 10px/1.5 Arial, sans-serif;
+      letter-spacing: .34em;
+      text-transform: uppercase;
+    }
+    .headline {
+      margin: 0;
+      font-size: clamp(2.25rem, 7.5vw, 4.4rem);
+      line-height: 1.06;
+      font-weight: 400;
+      letter-spacing: -.045em;
+      text-wrap: balance;
+    }
+    .headline em {
+      color: var(--rose-light);
+      font-weight: 400;
+    }
+    .intro {
+      max-width: 410px;
+      margin: 22px auto 0;
+      color: var(--muted);
+      font: 15px/1.9 Arial, sans-serif;
+      text-wrap: pretty;
+    }
+
+    .envelope-wrap {
+      position: relative;
+      width: 190px;
+      height: 145px;
+      margin: 35px auto 31px;
+      perspective: 800px;
+      filter: drop-shadow(0 20px 35px rgba(0, 0, 0, .23));
+    }
+    .envelope {
+      position: absolute;
+      inset: 15px 0 0;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #f6b8c8, #b95f82);
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    }
+    .envelope::before, .envelope::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+    }
+    .envelope::before {
+      background: linear-gradient(35deg, transparent 49.5%, rgba(105, 31, 64, .22) 50%, transparent 50.7%);
+    }
+    .envelope::after {
+      background: linear-gradient(145deg, transparent 49.5%, rgba(255, 235, 240, .34) 50%, transparent 50.7%);
+    }
+    .flap {
+      position: absolute;
+      top: 15px; left: 0;
+      width: 100%; height: 74px;
+      background: linear-gradient(135deg, #ffdbe3, #df8ca8);
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      transform-origin: top center;
+      transition: transform .8s cubic-bezier(.2,.7,.2,1);
+      z-index: 3;
+    }
+    .seal {
+      position: absolute;
+      z-index: 4;
+      left: 50%; top: 64px;
+      display: grid;
+      place-items: center;
+      width: 39px; height: 39px;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      color: #fff2f4;
+      background: linear-gradient(145deg, #b63d68, #7f244b);
+      box-shadow: 0 5px 16px #67203b55;
+      font-size: 18px;
+    }
+    .letter {
+      position: absolute;
+      left: 14px; right: 14px; bottom: 18px;
+      height: 94px;
+      border-radius: 4px;
+      background: #fff4ee;
+      transition: transform .9s cubic-bezier(.2,.7,.2,1), bottom .9s;
+      z-index: 2;
+    }
+    .letter::after {
+      content: "for you ♡";
+      display: block;
+      padding-top: 25px;
+      color: #a74a6a;
+      font: italic 15px Georgia, serif;
+    }
+    .envelope-wrap.open .flap { transform: rotateX(180deg); z-index: 1; }
+    .envelope-wrap.open .letter { transform: translateY(-67px); bottom: 28px; }
+    .envelope-wrap.open .seal { opacity: 0; transition: opacity .2s; }
+
+    .button {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      min-height: 52px;
+      padding: 15px 24px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform .22s ease, background .22s ease, box-shadow .22s ease, border-color .22s ease;
+      font: 700 12px/1.2 Arial, sans-serif;
+      letter-spacing: .08em;
+    }
+    .button:hover { transform: translateY(-2px); }
+    .button:active { transform: scale(.98); }
+    .button-primary {
+      color: #381624;
+      background: linear-gradient(110deg, #ffd5df, #ff9fba);
+      box-shadow: 0 8px 30px rgba(255, 125, 158, .19);
+    }
+    .button-primary:hover { box-shadow: 0 12px 36px rgba(255, 125, 158, .31); }
+    .button-quiet {
+      color: var(--cream);
+      border-color: var(--line);
+      background: rgba(255,255,255,.045);
+    }
+    .tiny-note {
+      margin: 19px 0 0;
+      color: #b99aa8;
+      font: 11px/1.6 Arial, sans-serif;
+      letter-spacing: .04em;
+    }
+
+    .panel {
+      width: min(100%, 590px);
+      padding: clamp(28px, 6vw, 48px) clamp(20px, 6vw, 48px);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(145deg, rgba(255,255,255,.085), rgba(255,255,255,.035));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      animation: panelIn .8s cubic-bezier(.2,.75,.2,1) both;
+    }
+    .panel .headline { font-size: clamp(2.1rem, 7vw, 3.6rem); }
+    .proposal-copy {
+      max-width: 420px;
+      margin: 22px auto 27px;
+      color: var(--muted);
+      font: 15px/1.95 Arial, sans-serif;
+    }
+    .signature {
+      margin: 0 auto 28px;
+      color: var(--rose-light);
+      font: italic 20px/1.5 Georgia, serif;
+    }
+    .button-area {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 13px;
+      min-height: 62px;
+    }
+    #noBtn {
+      position: relative;
+      color: #f7dbe4;
+      border-color: rgba(255, 220, 230, .25);
+      background: rgba(255,255,255,.045);
+      z-index: 8;
+      touch-action: manipulation;
+    }
+    #hint {
+      min-height: 20px;
+      margin: 20px 0 0;
+      color: #d4a8b9;
+      font: italic 13px/1.5 Georgia, serif;
+    }
+    .hidden { display: none !important; }
+
+    .celebration {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      padding: 22px;
+      background:
+        radial-gradient(ellipse at 50% 20%, rgba(255, 126, 164, .24), transparent 48%),
+        linear-gradient(145deg, #281322, #160e1b 72%);
+      animation: fadeIn .8s ease both;
+    }
+    .celebration-inner {
+      position: relative;
+      z-index: 2;
+      width: min(100%, 600px);
+      text-align: center;
+      animation: celebrationIn 1s cubic-bezier(.15,.8,.25,1) both;
+    }
+    .big-heart {
+      display: inline-block;
+      margin-bottom: 20px;
+      font-size: clamp(58px, 15vw, 92px);
+      filter: drop-shadow(0 0 35px rgba(255, 100, 150, .4));
+      animation: heartBeat 1.5s ease-in-out infinite;
+    }
+    .celebration .headline { font-size: clamp(2.8rem, 10vw, 5.4rem); }
+    .celebration-copy {
+      max-width: 435px;
+      margin: 24px auto 29px;
+      color: var(--muted);
+      font: 15px/1.95 Arial, sans-serif;
+    }
+    .celebration-copy strong { color: var(--rose-light); font-weight: 600; }
+    .sparkle {
+      position: absolute;
+      pointer-events: none;
+      animation: sparkle 1.8s ease-out forwards;
+      z-index: 1;
+    }
+    .footer-note {
+      position: fixed;
+      z-index: 2;
+      bottom: 13px;
+      left: 0; right: 0;
+      text-align: center;
+      color: rgba(255, 228, 237, .42);
+      font: 10px/1.5 Arial, sans-serif;
+      letter-spacing: .12em;
+      pointer-events: none;
+    }
+
+    @keyframes sceneIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes panelIn { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes celebrationIn { from { opacity: 0; transform: translateY(22px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes drift { to { transform: translate(8vmax, 6vmax) scale(1.15); } }
+    @keyframes twinkle { from { opacity: .15; transform: scale(.7); } to { opacity: .7; transform: scale(1.4); } }
+    @keyframes petalFall {
+      0% { transform: translate3d(0, -8vh, 0) rotate(0deg); opacity: 0; }
+      12% { opacity: .52; }
+      85% { opacity: .35; }
+      100% { transform: translate3d(var(--drift), 112vh, 0) rotate(560deg); opacity: 0; }
+    }
+    @keyframes heartBeat { 0%, 100% { transform: scale(1); } 12% { transform: scale(1.09); } 24% { transform: scale(1); } 36% { transform: scale(1.05); } }
+    @keyframes sparkle { 0% { opacity: 0; transform: translateY(0) scale(.5) rotate(0); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(75px) scale(1.2) rotate(80deg); } }
+
+    @media (max-width: 480px) {
+      .page { padding: 24px 16px 38px; }
+      .eyebrow { margin-bottom: 17px; font-size: 9px; }
+      .intro, .proposal-copy, .celebration-copy { font-size: 14px; }
+      .envelope-wrap { margin-top: 27px; margin-bottom: 25px; transform: scale(.92); }
+      .panel { border-radius: 23px; }
+      .button { min-height: 50px; padding: 14px 19px; }
+      .footer-note { font-size: 9px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient" aria-hidden="true">
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+  </div>
+  <div class="stars" id="stars" aria-hidden="true"></div>
+  <div class="petals" id="petals" aria-hidden="true"></div>
+
+  <main class="page" id="mainPage">
+    <section class="scene" id="welcome" aria-labelledby="welcomeTitle">
+      <p class="eyebrow">A little something, just for you</p>
+      <h1 class="headline" id="welcomeTitle">Some things are<br>better said <em>from the heart.</em></h1>
+      <p class="intro">I’ve been keeping a little question close to my heart.<br>So I made you something instead of just saying it.</p>
+
+      <div class="envelope-wrap" id="envelope" aria-hidden="true">
+        <div class="letter"></div>
+        <div class="envelope"></div>
+        <div class="flap"></div>
+        <div class="seal">♥</div>
+      </div>
+
+      <button class="button button-primary" id="openBtn" type="button">
+        Open your letter <span aria-hidden="true">↗</span>
+      </button>
+      <p class="tiny-note">Take a breath. This one's for you ✦</p>
+    </section>
+
+    <section class="panel hidden" id="proposal" aria-labelledby="proposalTitle">
+      <p class="eyebrow">From my heart to yours</p>
+      <h1 class="headline" id="proposalTitle">Hey, <em id="herNameHeading">Tina</em>…</h1>
+      <p class="proposal-copy" id="proposalCopy">
+        Out of all the people I could have met, I’m really glad our paths crossed.
+        You make ordinary moments feel special, and I want to make a thousand more memories with you.
+        <br><br>
+        So, there’s one thing I’ve been wanting to ask…
+      </p>
+      <p class="headline" style="font-size:clamp(1.8rem, 6vw, 2.7rem);">Will you be my <em>girlfriend?</em> 🌷</p>
+      <p class="signature">— <span id="myNameSignature">Manas</span></p>
+
+      <div class="button-area" id="buttonArea">
+        <button class="button button-primary" id="yesBtn" type="button">YES, ABSOLUTELY ♡</button>
+        <button class="button" id="noBtn" type="button">No 🙈</button>
+      </div>
+      <p id="hint" role="status" aria-live="polite">No pressure… but I’m hoping for a yes. ✨</p>
+    </section>
+  </main>
+
+  <section class="celebration hidden" id="celebration" aria-labelledby="celebrationTitle" aria-live="polite">
+    <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
+    <div class="celebration-inner">
+      <div class="big-heart" aria-hidden="true">💖</div>
+      <p class="eyebrow">The beginning of something beautiful</p>
+      <h1 class="headline" id="celebrationTitle">You said <em>YES!</em></h1>
+      <p class="celebration-copy">
+        <strong id="celebrationHerName">Tina</strong>, you have no idea how big my smile is right now.
+        Here’s to little adventures, late-night talks, silly jokes, and memories we’ll keep coming back to.
+        <br><br>
+        I’m really happy it’s <em>you</em>. ♡
+      </p>
+      <p class="signature">With all my heart,<br><span id="celebrationMyName">Manas</span></p>
+      <button class="button button-primary" id="hugBtn" type="button">Send a virtual hug 🫂</button>
+      <p class="tiny-note" id="hugMessage" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <p class="footer-note">MADE WITH A LITTLE COURAGE & A LOT OF HEART</p>
+
+  <script>
+    /*
+      PERSONALIZE HERE:
+      1. herName is the female recipient's name.
+      2. yourName is the male sender's name.
+      3. Optionally change the personalMemory sentence below.
+    */
+    const CONFIG = {
+      herName: "Tina",
+      yourName: "Manas",
+      personalMemory: "" // Example: "I still smile when I think about our first conversation."
+    };
+
+    const $ = (selector) => document.querySelector(selector);
+    const welcome = $("#welcome");
+    const proposal = $("#proposal");
+    const celebration = $("#celebration");
+    const envelope = $("#envelope");
+    const openBtn = $("#openBtn");
+    const yesBtn = $("#yesBtn");
+    const noBtn = $("#noBtn");
+    const hint = $("#hint");
+    const buttonArea = $("#buttonArea");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function displayName(value, fallback) {
+      const cleaned = String(value || "").trim();
+      return cleaned && !/^her name$/i.test(cleaned) && !/^your name$/i.test(cleaned)
+        ? cleaned
+        : fallback;
+    }
+
+    const herName = displayName(CONFIG.herName, "Tina");
+    const yourName = displayName(CONFIG.yourName, "Manas");
+
+    $("#herNameHeading").textContent = herName;
+    $("#myNameSignature").textContent = yourName;
+    $("#celebrationHerName").textContent = herName;
+    $("#celebrationMyName").textContent = yourName;
+
+    if (CONFIG.personalMemory.trim()) {
+      const memory = document.createElement("p");
+      memory.className = "proposal-copy";
+      memory.style.marginTop = "-14px";
+      memory.style.color = "#ffd0dc";
+      memory.textContent = CONFIG.personalMemory;
+      $("#proposalCopy").after(memory);
+    }
+
+    // Decorative stars and petals. They never intercept clicks.
+    const stars = $("#stars");
+    for (let i = 0; i < 75; i++) {
+      const star = document.createElement("span");
+      star.className = "star";
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.animationDelay = `${Math.random() * 4}s`;
+      star.style.animationDuration = `${2 + Math.random() * 3}s`;
+      stars.appendChild(star);
+    }
+
+    const petals = $("#petals");
+    if (!reducedMotion) {
+      const symbols = ["✦", "✧", "♡", "✿"];
+      for (let i = 0; i < 18; i++) {
+        const petal = document.createElement("span");
+        petal.className = "petal";
+        petal.textContent = symbols[i % symbols.length];
+        petal.style.left = `${Math.random() * 100}%`;
+        petal.style.setProperty("--drift", `${Math.random() * 150 - 75}px`);
+        petal.style.animationDuration = `${12 + Math.random() * 15}s`;
+        petal.style.animationDelay = `${-Math.random() * 24}s`;
+        petal.style.fontSize = `${12 + Math.random() * 13}px`;
+        petals.appendChild(petal);
+      }
+    }
+
+    openBtn.addEventListener("click", () => {
+      openBtn.disabled = true;
+      envelope.classList.add("open");
+      openBtn.textContent = "A little moment…";
+      window.setTimeout(() => {
+        welcome.classList.add("hidden");
+        proposal.classList.remove("hidden");
+        $("#herNameHeading").focus?.();
+      }, reducedMotion ? 20 : 700);
+    });
+
+    // Playful NO button: moves within the viewport and never covers the YES button.
+    let noCount = 0;
+    let noIsDodging = false;
+    const messages = [
+      "Wait… give my heart one more second? 🥺",
+      "That button has places to be 😭",
+      "My imaginary puppy is rooting for YES 🐶",
+      "I promise to share my fries… most of them 🍟",
+      "Even the stars are saying think again ✨",
+      "Okay, okay… one last tiny reconsideration? 💗"
+    ];
+
+    function moveNoButton() {
+      if (proposal.classList.contains("hidden")) return;
+      noCount++;
+      hint.textContent = messages[Math.min(noCount - 1, messages.length - 1)];
+
+      // Keep it near the proposal card rather than sending it across the whole screen.
+      const area = buttonArea.getBoundingClientRect();
+      const button = noBtn.getBoundingClientRect();
+      const maxX = Math.max(0, Math.min(145, window.innerWidth / 2 - button.width / 2 - 12));
+      const maxY = Math.max(0, Math.min(95, window.innerHeight / 2 - button.height / 2 - 12));
+      const dx = (Math.random() * 2 - 1) * maxX;
+      const dy = (Math.random() * 2 - 1) * maxY;
+
+      noBtn.style.position = "relative";
+      noBtn.style.transform = `translate(${dx}px, ${dy}px)`;
+      noIsDodging = true;
+    }
+
+    noBtn.addEventListener("pointerenter", (event) => {
+      if (event.pointerType === "mouse" && !reducedMotion) moveNoButton();
+    });
+    noBtn.addEventListener("focus", () => {
+      // Keyboard users can still activate the button; don't make focus jump away.
+      hint.textContent = "You found the No button! It’s feeling a little shy. 🙈";
+    });
+    noBtn.addEventListener("click", () => {
+      if (!noIsDodging) {
+        moveNoButton();
+      } else {
+        hint.textContent = "Okay, you caught it! 😅 No worries—take your time.";
+        noBtn.style.transform = "translate(0, 0)";
+        noIsDodging = false;
+      }
+    });
+    noBtn.addEventListener("touchstart", () => {
+      if (!reducedMotion) moveNoButton();
+    }, { passive: true });
+
+    function createCelebrationEffects() {
+      if (reducedMotion) return;
+      const layer = $("#confettiLayer");
+      const pieces = ["♡", "♥", "✦", "✧", "💗", "✨"];
+      for (let i = 0; i < 65; i++) {
+        const piece = document.createElement("span");
+        piece.className = "sparkle";
+        piece.textContent = pieces[i % pieces.length];
+        piece.style.left = `${Math.random() * 100}%`;
+        piece.style.top = `${10 + Math.random() * 75}%`;
+        piece.style.fontSize = `${12 + Math.random() * 20}px`;
+        piece.style.color = i % 2 ? "#ffd0dc" : "#fff0a8";
+        piece.style.animationDelay = `${Math.random() * 1.6}s`;
+        layer.appendChild(piece);
+        window.setTimeout(() => piece.remove(), 3800);
+      }
+    }
+
+    yesBtn.addEventListener("click", () => {
+      proposal.classList.add("hidden");
+      celebration.classList.remove("hidden");
+      createCelebrationEffects();
+      $("#hugBtn").focus();
+    });
+
+    $("#hugBtn").addEventListener("click", () => {
+      $("#hugMessage").textContent = "Hug delivered. Holding it for as long as you need. 🫂❤️";
+      createCelebrationEffects();
+    });
+
+    // Avoid stale positions after device rotation or resizing.
+    window.addEventListener("resize", () => {
+      noBtn.style.transform = "translate(0, 0)";
+      noIsDodging = false;
+    });
+  </script>
+</body>
+</html>
